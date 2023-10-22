@@ -1,5 +1,5 @@
-using System.Collections;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.Android;
 using TMPro;
@@ -7,61 +7,90 @@ using TMPro;
 public class GPS : MonoBehaviour
 {
     public TextMeshProUGUI gpsOut;
-    public bool isUpdating;
-    private void Update()
+    private bool isUpdating;
+
+    void Start()
     {
+        Debug.Log("Start method");
+
         if (!isUpdating)
         {
             StartCoroutine(GetLocation());
             isUpdating = !isUpdating;
         }
     }
+
+    void SetInitialCoordinates(float latitude, float longitude)
+    {
+        float altitude = 100f; // Твоя высота
+        transform.position = new Vector3(longitude, latitude, altitude);
+
+        UpdateGPSOut();
+    }
+
+    void UpdateGPSOut()
+    {
+        gpsOut.text = "Location: " + transform.position.x.ToString("F6") + " | " + transform.position.y.ToString("F6") + " | " + transform.position.z.ToString("F6");
+        Debug.Log("Location: " + transform.position.x + " | " + transform.position.y + " | " + transform.position.z);
+    }
+
+    void Update()
+    {
+        // Проверяем изменения позиции и обновляем текст
+        if (transform.hasChanged)
+        {
+            UpdateGPSOut();
+            transform.hasChanged = false;
+        }
+    }
+
     IEnumerator GetLocation()
     {
+        Debug.Log("GetLocation method");
+
         if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
         {
+            Debug.Log("Requesting permissions");
             Permission.RequestUserPermission(Permission.FineLocation);
             Permission.RequestUserPermission(Permission.CoarseLocation);
         }
-        // First, check if user has location service enabled
-        if (!Input.location.isEnabledByUser)
-            yield return new WaitForSeconds(10);
 
-        // Start service before querying location
+        if (!Input.location.isEnabledByUser)
+        {
+            Debug.Log("Location services not enabled, waiting 10 seconds");
+            yield return new WaitForSeconds(10);
+        }
+
         Input.location.Start();
 
-        // Wait until service initializes
         int maxWait = 10;
         while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
         {
+            Debug.Log("Waiting for GPS initialization...");
             yield return new WaitForSeconds(1);
             maxWait--;
         }
 
-        // Service didn't initialize in 20 seconds
         if (maxWait < 1)
         {
+            Debug.Log("Timed out");
             gpsOut.text = "Timed out";
-            print("Timed out");
             yield break;
         }
 
-        // Connection has failed
         if (Input.location.status == LocationServiceStatus.Failed)
         {
+            Debug.Log("Failed to determine device location");
             gpsOut.text = "Unable to determine device location";
-               print("Unable to determine device location");
             yield break;
         }
-        else
-        {
-            gpsOut.text = "Location: " + Input.location.lastData.latitude + " | " + Input.location.lastData.longitude + " | " + Input.location.lastData.altitude+100f + " | " + Input.location.lastData.horizontalAccuracy + " | " + Input.location.lastData.timestamp;
-            // Access granted and location value could be retrieved
-            print("Location: " + Input.location.lastData.latitude + " | " + Input.location.lastData.longitude + " | " + Input.location.lastData.altitude + " | " + Input.location.lastData.horizontalAccuracy + " | " + Input.location.lastData.timestamp);
-        }
 
-        // Stop service if there is no need to query location updates continuously
-        isUpdating = !isUpdating;
-        Input.location.Stop();
+        // Вызываем SetInitialCoordinates при старте, после получения первых данных
+        SetInitialCoordinates(Input.location.lastData.latitude, Input.location.lastData.longitude);
+
+        while (isUpdating)
+        {
+            yield return null;
+        }
     }
 }
