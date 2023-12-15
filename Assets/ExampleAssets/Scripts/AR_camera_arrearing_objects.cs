@@ -30,6 +30,7 @@ public class AR_camera_arrearing_objects : MonoBehaviour
                 if (distance <= maxDistance)
                 {
                     obj.SetActive(true);
+                    obj.transform.LookAt(arCamera);
                 }
                 else
                 {
