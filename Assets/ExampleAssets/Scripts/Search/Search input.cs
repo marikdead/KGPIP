@@ -10,6 +10,8 @@ public class Searchinput : MonoBehaviour
     //public GameObject prefab;  префаб, который будем спавнить
     //public Transform spawnParent;  родитель, куда будем спавнить
 
+    public Animator animator;
+
     private string dbName = "URI=file:KGPIP.db";
      private TMP_InputField inputField;
 
