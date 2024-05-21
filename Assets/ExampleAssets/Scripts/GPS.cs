@@ -23,7 +23,7 @@ public class GPS : MonoBehaviour
     void SetInitialCoordinates(float latitude, float longitude)
     {
         float altitude = 100f; // Твоя высота
-        transform.position = new Vector3(longitude, latitude, altitude);
+        //transform.position = new Vector3(longitude, latitude, altitude);
 
         UpdateGPSOut();
     }
@@ -31,7 +31,7 @@ public class GPS : MonoBehaviour
     void UpdateGPSOut()
     {
         gpsOut.text = "Location: " + transform.position.x.ToString("F6") + " | " + transform.position.y.ToString("F6") + " | " + transform.position.z.ToString("F6");
-        Debug.Log("Location: " + transform.position.x + " | " + transform.position.y + " | " + transform.position.z);
+        //Debug.Log("Location: " + transform.position.x + " | " + transform.position.y + " | " + transform.position.z);
     }
 
     void Update()
@@ -50,14 +50,14 @@ public class GPS : MonoBehaviour
 
         if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
         {
-            Debug.Log("Requesting permissions");
+            //Debug.Log("Requesting permissions");
             Permission.RequestUserPermission(Permission.FineLocation);
             Permission.RequestUserPermission(Permission.CoarseLocation);
         }
 
         if (!Input.location.isEnabledByUser)
         {
-            Debug.Log("Location services not enabled, waiting 10 seconds");
+            //Debug.Log("Location services not enabled, waiting 10 seconds");
             yield return new WaitForSeconds(10);
         }
 
@@ -66,21 +66,21 @@ public class GPS : MonoBehaviour
         int maxWait = 10;
         while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
         {
-            Debug.Log("Waiting for GPS initialization...");
+            //Debug.Log("Waiting for GPS initialization...");
             yield return new WaitForSeconds(1);
             maxWait--;
         }
 
         if (maxWait < 1)
         {
-            Debug.Log("Timed out");
+            //Debug.Log("Timed out");
             gpsOut.text = "Timed out";
             yield break;
         }
 
         if (Input.location.status == LocationServiceStatus.Failed)
         {
-            Debug.Log("Failed to determine device location");
+            //Debug.Log("Failed to determine device location");
             gpsOut.text = "Unable to determine device location";
             yield break;
         }
